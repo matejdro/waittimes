@@ -2,6 +2,64 @@ const textCleaner = require('./text-cleaner');
 const datetime_utils = require('./datetime-utils');
 const keys = require('message_keys');
 
+const shownAttractions = {
+    // Europa park
+    "639738d3-9574-4f60-ab5b-4c392901320b": [
+        "Alpine Express 'Enzian'",
+        "ARTHUR",
+        "Atlantica SuperSplash",
+        "blue fire Megacoaster",
+        "Euro-Mir",
+        "Eurosat - CanCan Coaster",
+        "Fjord-Rafting",
+        "Matterhorn-Blitz",
+        "Queens Diamonds  Laser Maze",
+        "Swiss Bob Run",
+        "Tirol Log Flume",
+        "Vindjammer",
+        "Voletarium",
+        "Voltron Nevera powered by Rimac",
+        "Water rollercoaster Poseidon",
+        "WODAN - Timburcoaster"
+    ],
+
+    // Phantasialand
+    "abb67808-61e3-49ef-996c-1b97ed64fac6": [
+        "Black Mamba",
+        "Chiapas - DIE Wasserbahn",
+        "Colorado Adventure",
+        "Das verrckte Hotel Tartff",
+        "F.L.Y.",
+        "Mystery Castle",
+        "Raik",
+        "River Quest",
+        "Talocan",
+        "Taron",
+        "Winjas Fear",
+        "Winjas Force",
+    ],
+
+    // Plopsaland Deutschland
+    "3ad67aac-0b97-4961-8aa8-c3b8d2350873": [
+        "100% Wolf  The family roller co",
+        "Beach Rescue",
+        "bigFM Expedition GeForce",
+        "Blinky's Outback Expedition",
+        "Blinky's Soapboxes",
+        "DinoSplash",
+        "Free Fall Tower",
+        "Lighthouse Tower",
+        "Mias Elf Flight",
+        "Sky Fly",
+        "Sky Scream",
+        "Tabalugas Rollercoaster",
+        "The Big Wave",
+        "The Swinging Tree",
+        "Wellenflug",
+        "Wickie Splash",
+    ]
+}
+
 function AttractionsAPI() {
     this.API_BASE_URL = "https://api.themeparks.wiki/v1/entity/";
 }
@@ -27,7 +85,7 @@ AttractionsAPI.prototype.fetchRawAttractionsForPark = function(park_id, callback
                 const response = JSON.parse(this.responseText);
                 const livedata = response.liveData;
                 console.log("Got raw attraction data back with " + livedata.length + " attractions");
-                callback(livedata);
+                callback(park_id, livedata);
             } catch (e) {
                 // D'aw. TODO: Send error
                 console.log("Error while hitting attractions endpoint!");
@@ -143,7 +201,7 @@ AttractionsAPI.prototype.reformatRawAttractionData = function(live_data) {
     return out_data;
 }
 
-AttractionsAPI.prototype.sortAndFilterCleanAttractionData = function(clean_data, settings) {
+AttractionsAPI.prototype.sortAndFilterCleanAttractionData = function(park_id, clean_data, settings) {
     // For each attraction, decide if we want it or not.
     // Afterwards, sort the lot.
     //
@@ -159,6 +217,8 @@ AttractionsAPI.prototype.sortAndFilterCleanAttractionData = function(clean_data,
 
     const filtered_list = [];
     
+    const whitelist = shownAttractions[park_id];
+
     clean_data.forEach(clean_venue => {
         // If the attraction doesn't align with our type visibility settings,
         // skip it
@@ -181,6 +241,10 @@ AttractionsAPI.prototype.sortAndFilterCleanAttractionData = function(clean_data,
             settings["c_hideClosed"]
             // Don't add it.
         ) return;
+
+        if (whitelist && !whitelist.includes(clean_venue["name"])) {
+            return;
+        }
 
         filtered_list.push(clean_venue);
     });

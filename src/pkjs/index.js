@@ -8,14 +8,14 @@ const AttractionsAPI = require('./attractions');
 const attractions = new AttractionsAPI();
 const SETTINGS_FORGOT_KEY = "pwt_destinations_settings_forgot_cache";
 
-function handleWaitTimeResponse(response_data)
+function handleWaitTimeResponse(park_id, response_data)
 {
     const structured_data = attractions.reformatRawAttractionData(response_data);
     // console.log("-------- RAW DATA -----------")
     // console.log("\n" + JSON.stringify(structured_data) + "\n");
     // Get our settings from Clay
     const clay_data = JSON.parse(localStorage.getItem('clay-settings'));
-    const sorted_and_filtered_data = attractions.sortAndFilterCleanAttractionData(structured_data, clay_data);
+    const sorted_and_filtered_data = attractions.sortAndFilterCleanAttractionData(park_id, structured_data, clay_data);
     
     // console.log("-------- SORTED AND FILTERED DATA -----------")
     // console.log("\n" + JSON.stringify(sorted_and_filtered_data) + "\n");
