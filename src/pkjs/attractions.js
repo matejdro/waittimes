@@ -57,6 +57,44 @@ const shownAttractions = {
         "The Swinging Tree",
         "Wellenflug",
         "Wickie Splash",
+    ],
+
+    // Parque de Attraciones Madrid
+    "1ea86991-e2c2-4771-8a32-c6e14c8298a9": [
+        "Abismo",
+        "Aserradero",
+        "La Jungla",
+        "La Mquina",
+        "Lanzadera",
+        "Los Fiordos",
+        "Los Rpidos",
+        "Star Flyer",
+        "Tarntula",
+        "The Walking Dead Experience",
+        "The Walking Dead: Silence for survival",
+        "Tifn",
+        "TNT - Tren de la Mina",
+        "Top Spin",
+        "Tornado",
+        "Vrtigo"
+    ],
+
+    // Parque Warner Madrid
+    "5adbd2f7-3694-4d23-aaec-4037a056573f": [
+        "Batman Gotham City Escape",
+        "BATMAN: Arkham Asylum",
+        "Cataratas Salvajes",
+        "Coaster Express",
+        "Correcaminos Bip Bip",
+        "Expedientes Warren",
+        "La Venganza del ENIGMA",
+        "LEX LUTHOR",
+        "Los Carros de la Mina",
+        "Rpidos ACME",
+        "Ro Bravo",
+        "Stunt Fall",
+        "SUPERMAN: La Atraccin de Acero",
+        "TOM y JERRY"
     ]
 }
 
@@ -243,6 +281,7 @@ AttractionsAPI.prototype.sortAndFilterCleanAttractionData = function(park_id, cl
         ) return;
 
         if (whitelist && !whitelist.includes(clean_venue["name"])) {
+            console.log("Filtering out", clean_venue["name"])
             return;
         }
 
