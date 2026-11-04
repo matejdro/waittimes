@@ -102,6 +102,17 @@ function AttractionsAPI() {
     this.API_BASE_URL = "https://api.themeparks.wiki/v1/entity/";
 }
 
+function errorParkData(msg) {
+    return [
+        {
+            "name": msg,
+            "type": "ATTRACTION",
+            "status": "CLOSED",
+            "force_show": true,
+        }
+    ];
+}
+
 // Step 1: Collect attractions
 // Step 2: Re-format attractions data for internal use
 // Step 3: Filter, sort attractions
@@ -125,6 +136,8 @@ AttractionsAPI.prototype.fetchRawAttractionsForPark = function(park_id, callback
                 console.log("Got raw attraction data back with " + livedata.length + " attractions");
                 callback(park_id, livedata);
             } catch (e) {
+                callback(park_id, errorParkData("Error " + e));
+
                 // D'aw. TODO: Send error
                 console.log("Error while hitting attractions endpoint!");
                 console.log(e.name);
@@ -132,6 +145,7 @@ AttractionsAPI.prototype.fetchRawAttractionsForPark = function(park_id, callback
                 console.log(e.stack);
             }
         } else {
+            callback(park_id, errorParkData("Error " + this.status));
             // D'aw. TODO: Display Error
             console.log("Something went wrong with the response code :(");
             console.log(this.status);
@@ -141,6 +155,7 @@ AttractionsAPI.prototype.fetchRawAttractionsForPark = function(park_id, callback
 
     request.onerror = function() {
         // TODO: Display Error
+        callback(park_id, errorParkData("Network error"));
         console.log("Something went wrong with the request itself :(");
     }
 
@@ -159,7 +174,8 @@ AttractionsAPI.prototype.reformatRawAttractionData = function(live_data) {
         "standby_wait": <STANDBY WAIT>,
         "next_showtimes": [<next showtime>, <following showtime>, etc.],
         "boarding_group": <min group> <max group>,
-        "status": <STATUS STRING>
+        "status": <STATUS STRING>,
+        "force_show": <true/false>
     }
     */
     live_data.forEach(raw_attraction => {
@@ -175,6 +191,7 @@ AttractionsAPI.prototype.reformatRawAttractionData = function(live_data) {
         // We also don't display them directly on the watch.
         clean_attraction["type"]   = raw_attraction.entityType;
         clean_attraction["status"] = raw_attraction.status;
+        clean_attraction["force_show"] = raw_attraction.force_show;
 
         // Standby wait!
         // Some things have them! Some don't! Let's see if it has it
@@ -258,31 +275,33 @@ AttractionsAPI.prototype.sortAndFilterCleanAttractionData = function(park_id, cl
     const whitelist = shownAttractions[park_id];
 
     clean_data.forEach(clean_venue => {
-        // If the attraction doesn't align with our type visibility settings,
-        // skip it
-        if(clean_venue["type"] == "ATTRACTION" && 
-            !settings["c_typeVisibility"][0]) return;
+        if (!clean_venue["force_show"]) {
+            // If the attraction doesn't align with our type visibility settings,
+            // skip it
+            if(clean_venue["type"] == "ATTRACTION" && 
+                !settings["c_typeVisibility"][0]) return;
 
-        if(clean_venue["type"] == "SHOW" && 
-            !settings["c_typeVisibility"][1]) return;
-        
-        if(clean_venue["type"] == "RESTAURANT" &&
-            !settings["c_typeVisibility"][2]) return;
-        
-        // If it has no wait times...
-        if(clean_venue["standby_wait"] == null &&
-            // And no upcoming showtimes
-            clean_venue["next_showtimes"].length <= 0 &&
-            // And no boarding groups
-            clean_venue["boarding_groups"].length <= 0 &&
-            // And the user doesn't want to see it
-            settings["c_hideClosed"]
-            // Don't add it.
-        ) return;
+            if(clean_venue["type"] == "SHOW" && 
+                !settings["c_typeVisibility"][1]) return;
+            
+            if(clean_venue["type"] == "RESTAURANT" &&
+                !settings["c_typeVisibility"][2]) return;
+            
+            // If it has no wait times...
+            if(clean_venue["standby_wait"] == null &&
+                // And no upcoming showtimes
+                clean_venue["next_showtimes"].length <= 0 &&
+                // And no boarding groups
+                clean_venue["boarding_groups"].length <= 0 &&
+                // And the user doesn't want to see it
+                settings["c_hideClosed"]
+                // Don't add it.
+            ) return;
 
-        if (whitelist && !whitelist.includes(clean_venue["name"])) {
-            console.log("Filtering out", clean_venue["name"])
-            return;
+            if (whitelist && !whitelist.includes(clean_venue["name"])) {
+                console.log("Filtering out", clean_venue["name"])
+                return;
+            }
         }
 
         filtered_list.push(clean_venue);
