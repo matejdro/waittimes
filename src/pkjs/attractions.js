@@ -42,7 +42,6 @@ AttractionsAPI.prototype.fetchRawAttractionsForPark = function(park_id, callback
             } catch (e) {
                 callback(park_id, errorParkData("Error " + e));
 
-                // D'aw. TODO: Send error
                 console.log("Error while hitting attractions endpoint!");
                 console.log(e.name);
                 console.log(e.message);
@@ -50,7 +49,6 @@ AttractionsAPI.prototype.fetchRawAttractionsForPark = function(park_id, callback
             }
         } else {
             callback(park_id, errorParkData("Error " + this.status));
-            // D'aw. TODO: Display Error
             console.log("Something went wrong with the response code :(");
             console.log(this.status);
             console.log(this.responseText);
@@ -58,7 +56,6 @@ AttractionsAPI.prototype.fetchRawAttractionsForPark = function(park_id, callback
     }
 
     request.onerror = function() {
-        // TODO: Display Error
         callback(park_id, errorParkData("Network error"));
         console.log("Something went wrong with the request itself :(");
     }
